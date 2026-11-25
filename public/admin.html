@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0d0d1a" />
+<title>管理台 · CpmTool工作室</title>
+<style>
+  :root{
+    --bg-main:#0d0d1a;
+    --bg-panel:#16162b;
+    --bg-dark:#0a0a14;
+    --text-main:#e8e8ff;
+    --text-gray:#999ab8;
+    --accent-blue:#3b88ff;
+    --accent-purple:#9d5cff;
+    --accent-red:#ff4757;
+    --accent-green:#2ed573;
+    --accent-yellow:#ffd32a;
+    --border:#2a2a4a;
+    --input-bg:#1f1f3a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft Yahei",system-ui,-apple-system,sans-serif;}
+  html,body{min-height:100%;}
+  body{
+    background:
+      radial-gradient(900px 460px at 6% -10%, rgba(59,136,255,.16), transparent 60%),
+      radial-gradient(720px 420px at 98% 2%, rgba(157,92,255,.14), transparent 58%),
+      var(--bg-main);
+    color:var(--text-main);
+    padding:16px 13px calc(30px + env(safe-area-inset-bottom));
+    min-height:100dvh;
+    line-height:1.6;
+  }
+  .wrap{max-width:1000px;margin:0 auto;}
+  .hidden{display:none !important;}
+
+  .panel{
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:14px;
+    box-shadow:0 14px 34px rgba(0,0,0,.32);
+  }
+  .panel h2{
+    font-size:1rem;margin-bottom:12px;color:var(--accent-blue);
+    display:flex;align-items:center;gap:8px;font-weight:700;
+  }
+  .panel h2 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-blue);box-shadow:0 0 10px var(--accent-blue);}
+
+  /* 登录 */
+  .login{max-width:390px;margin:10vh auto 0;}
+  .login .brand{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+  .logo{
+    width:48px;height:48px;border-radius:14px;display:grid;place-items:center;
+    font-size:17px;font-weight:800;color:#fff;
+    background:linear-gradient(145deg,var(--accent-blue),var(--accent-purple));
+    box-shadow:0 10px 26px rgba(59,136,255,.32);
+  }
+  .login .brand b{font-size:1.1rem;display:block;}
+  .login .brand span{font-size:.78rem;color:var(--text-gray);}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  .topbar h1{font-size:1.15rem;color:var(--accent-blue);}
+  .topbar .who{font-size:.75rem;color:var(--text-gray);margin-top:3px;}
+
+  label.lbl{display:block;font-size:.76rem;color:var(--text-gray);margin:0 0 6px 2px;}
+  input,select{
+    width:100%;padding:10px 12px;font-size:.95rem;
+    color:var(--text-main);background:var(--input-bg);
+    border:1px solid var(--border);border-radius:8px;outline:none;
+    font-family:inherit;transition:.16s;
+  }
+  input:focus,select:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px rgba(59,136,255,.14);}
+  select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#7d84b5 50%),linear-gradient(135deg,#7d84b5 50%,transparent 50%);background-position:calc(100% - 17px) 55%,calc(100% - 12px) 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;}
+  input[type="checkbox"]{width:16px;height:16px;accent-color:var(--accent-blue);cursor:pointer;}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:5px;
+    padding:10px 15px;border:none;border-radius:8px;cursor:pointer;
+    font-size:.9rem;font-weight:600;color:#fff;background:var(--accent-blue);
+    transition:filter .16s,opacity .16s,transform .1s;font-family:inherit;
+  }
+  .btn:hover{filter:brightness(1.1);}
+  .btn:active{transform:scale(.99);}
+  .btn:disabled{opacity:.5;cursor:default;}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:#c3c7e6;}
+  .btn.ghost:hover{border-color:var(--accent-blue);color:#fff;}
+  .btn.purple{background:var(--accent-purple);}
+  .btn.red{background:var(--accent-red);}
+  .btn.green{background:var(--accent-green);color:#05240f;}
+  .btn.dark{background:#252542;}
+  .btn.sm{padding:7px 10px;font-size:.8rem;border-radius:7px;}
+
+  .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+  .grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+  @media(max-width:760px){.grid4{grid-template-columns:repeat(2,minmax(0,1fr));}.grid2{grid-template-columns:1fr;}}
+
+  .stat{background:var(--bg-dark);border:1px solid var(--border);border-radius:10px;padding:12px 13px;}
+  .stat .k{font-size:.74rem;color:var(--text-gray);}
+  .stat .v{font-size:1.45rem;font-weight:800;margin-top:4px;color:#fff;font-variant-numeric:tabular-nums;}
+
+  .row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+  .grow{flex:1;}
+
+  /* 公益开关 */
+  .switchbar{display:flex;align-items:center;gap:14px;justify-content:space-between;}
+  .switchbar b{display:block;font-size:.95rem;margin-bottom:3px;}
+  .switchbar span{font-size:.76rem;color:var(--text-gray);line-height:1.55;}
+  .sw{position:relative;width:56px;height:30px;flex:0 0 56px;}
+  .sw input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:2;}
+  .sw .track{position:absolute;inset:0;background:#252542;border-radius:999px;border:1px solid var(--border);transition:.2s;}
+  .sw .knob{position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:#8b8db4;transition:.2s;}
+  .sw input:checked ~ .track{background:rgba(59,136,255,.45);border-color:var(--accent-blue);}
+  .sw input:checked ~ .knob{transform:translateX(26px);background:#fff;box-shadow:0 0 12px rgba(59,136,255,.7);}
+
+  /* 功能次数选择 */
+  .fn-groups{margin-top:6px;}
+  .fn-group{margin-bottom:12px;}
+  .fn-group .gtitle{font-size:.78rem;color:var(--accent-purple);font-weight:700;margin:10px 0 7px;letter-spacing:.5px;}
+  .fn-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;}
+  .fn-row{
+    display:flex;align-items:center;gap:8px;
+    background:var(--bg-dark);border:1px solid var(--border);
+    border-radius:8px;padding:7px 9px;
+  }
+  .fn-row.on{border-color:rgba(59,136,255,.65);background:rgba(59,136,255,.1);}
+  .fn-row .nm{flex:1;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .fn-row input[type="number"]{width:56px;padding:5px 4px;text-align:center;font-size:.82rem;border-radius:6px;}
+  .fn-row input[type="number"]:disabled{opacity:.4;}
+
+  .codes{display:flex;flex-wrap:wrap;gap:7px;max-height:230px;overflow:auto;margin-top:8px;}
+  .code-chip{
+    font-family:ui-monospace,Menlo,monospace;font-size:.8rem;letter-spacing:.8px;
+    padding:7px 10px;border-radius:7px;cursor:pointer;
+    background:rgba(59,136,255,.12);border:1px solid rgba(59,136,255,.45);color:#bcd8ff;
+  }
+  .code-chip:hover{background:rgba(59,136,255,.24);}
+
+  /* 表格 */
+  .tablewrap{overflow-x:auto;margin:0 -4px;}
+  table{width:100%;border-collapse:collapse;font-size:.8rem;min-width:900px;}
+  th,td{padding:9px 8px;text-align:left;border-bottom:1px solid rgba(42,42,74,.85);vertical-align:top;}
+  th{color:var(--text-gray);font-weight:600;font-size:.74rem;white-space:nowrap;position:sticky;top:0;background:#141428;z-index:1;}
+  td.mono{font-family:ui-monospace,Menlo,monospace;letter-spacing:.6px;color:#bcd8ff;white-space:nowrap;}
+  tr:hover td{background:rgba(59,136,255,.05);}
+
+  .tag{display:inline-block;font-size:.72rem;padding:2px 8px;border-radius:999px;border:1px solid transparent;white-space:nowrap;}
+  .tag.active{color:#b8ffcf;background:rgba(46,213,115,.14);border-color:rgba(46,213,115,.4);}
+  .tag.unused{color:#bcd8ff;background:rgba(59,136,255,.14);border-color:rgba(59,136,255,.4);}
+  .tag.expired{color:#ffb3bc;background:rgba(255,71,87,.14);border-color:rgba(255,71,87,.4);}
+  .tag.used_up{color:#ffe9a3;background:rgba(255,211,42,.14);border-color:rgba(255,211,42,.4);}
+  .tag.disabled{color:#c3c7e6;background:rgba(150,150,180,.14);border-color:rgba(150,150,180,.35);}
+
+  /* 功能次数角标 */
+  .fn-badges{display:flex;flex-wrap:wrap;gap:5px;max-width:280px;}
+  .fn-badge{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:.7rem;padding:3px 7px;border-radius:999px;
+    background:rgba(59,136,255,.1);border:1px solid rgba(59,136,255,.38);color:#c9dcff;
+    white-space:nowrap;
+  }
+  .fn-badge b{font-weight:800;color:#fff;font-variant-numeric:tabular-nums;}
+  .fn-badge.done{background:rgba(255,71,87,.12);border-color:rgba(255,71,87,.45);color:#ffc2c8;}
+  .fn-badge.done b{color:#ff8b96;}
+
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);
+    background:#1c1c36;color:#dbe4ff;border:1px solid var(--accent-blue);
+    padding:10px 16px;border-radius:10px;font-size:.85rem;opacity:0;pointer-events:none;
+    transition:.2s;z-index:99;max-width:88vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .note{font-size:.76rem;color:#7d84b5;line-height:1.7;margin-top:8px;}
+  .warn{background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.35);color:#ffc2c8;font-size:.78rem;padding:9px 11px;border-radius:8px;margin-bottom:12px;line-height:1.6;}
+  details summary{cursor:pointer;color:#bcd8ff;font-size:.9rem;padding:4px 0;font-weight:600;}
+  details[open] summary{margin-bottom:10px;}
+  .hr{height:1px;background:var(--border);margin:14px 0;}
+</style>
+</head>
+<body>
+
+<!-- 登录 -->
+<div id="loginView" class="login hidden">
+  <div class="panel">
+    <div class="brand">
+      <div class="logo">CPM</div>
+      <div>
+        <b>管理台</b>
+        <span>输入管理口令进入</span>
+      </div>
+    </div>
+    <form id="loginForm">
+      <label class="lbl">管理口令</label>
+      <input id="pw" type="password" autocomplete="current-password" placeholder="只有你自己知道" />
+      <div style="height:12px"></div>
+      <button id="loginBtn" class="btn" type="submit" style="width:100%">进入</button>
+    </form>
+    <div id="loginMsg" class="note" style="color:#ffb3bc"></div>
+  </div>
+</div>
+
+<!-- 主界面 -->
+<div id="appView" class="wrap hidden">
+  <div class="topbar">
+    <div>
+      <h1>CpmTool工作室 · 管理台</h1>
+      <div class="who" id="who"></div>
+    </div>
+    <button class="btn ghost sm" id="logoutBtn">退出</button>
+  </div>
+
+  <div id="storageWarn" class="warn hidden"></div>
+
+  <!-- 公益模式 -->
+  <div class="panel">
+    <h2><span class="dot"></span>公益模式</h2>
+    <div class="switchbar">
+      <div>
+        <b id="pubState">当前：需要卡密</b>
+        <span>开启后所有人打开网站直接进入，不用输卡密。卡密不失效，关掉后继续按原来的规则走。</span>
+      </div>
+      <label class="sw">
+        <input type="checkbox" id="pubToggle" />
+        <span class="track"></span><span class="knob"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- 概览 -->
+  <div class="grid4" style="margin-bottom:14px">
+    <div class="stat"><div class="k">卡密总数</div><div class="v" id="sTotal">0</div></div>
+    <div class="stat"><div class="k">生效中</div><div class="v" id="sActive">0</div></div>
+    <div class="stat"><div class="k">未激活</div><div class="v" id="sUnused">0</div></div>
+    <div class="stat"><div class="k">在线会话</div><div class="v" id="sOnline">0</div></div>
+  </div>
+
+  <!-- 生成卡密 -->
+  <div class="panel">
+    <h2><span class="dot"></span>生成卡密</h2>
+
+    <div class="grid2">
+      <div>
+        <label class="lbl">卡类型</label>
+        <select id="gType">
+          <option value="count">次数卡（按功能扣次）</option>
+          <option value="hour">小时卡</option>
+          <option value="day" selected>天卡</option>
+          <option value="week">周卡</option>
+          <option value="month">月卡</option>
+          <option value="forever">永久卡</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl" id="gValueLbl">时长（天）</label>
+        <input id="gValue" type="number" min="1" value="1" inputmode="numeric" />
+      </div>
+      <div>
+        <label class="lbl">生成数量（1–200）</label>
+        <input id="gCount" type="number" min="1" max="200" value="1" inputmode="numeric" />
+      </div>
+      <div>
+        <label class="lbl">卡密前缀（可不填）</label>
+        <input id="gPrefix" type="text" value="QT" maxlength="8" placeholder="QT" />
+      </div>
+      <div>
+        <label class="lbl">备注（给谁用、哪一批）</label>
+        <input id="gNote" type="text" maxlength="60" placeholder="例如：张三" />
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button id="genBtn" class="btn green" style="width:100%">生成</button>
+      </div>
+    </div>
+
+    <!-- 次数卡：选功能 -->
+    <div id="fnBox" class="hidden">
+      <div class="hr"></div>
+      <div class="row" style="justify-content:space-between">
+        <label class="lbl" style="margin:0">勾选这张卡能用的功能，并填每个功能能用几次</label>
+        <div class="row">
+          <button class="btn ghost sm" id="fnAll1">全选 1 次</button>
+          <button class="btn ghost sm" id="fnAdd1">全部 +1</button>
+          <button class="btn ghost sm" id="fnNone">清空</button>
+        </div>
+      </div>
+      <div class="fn-groups" id="fnGroups"></div>
+      <div class="note" id="fnNote">不勾任何功能 = 老式次数卡（每验证进入一次扣 1 次，用左上「次数」填总量）。</div>
+    </div>
+
+    <div class="note" id="genHint">小时/天/周/月卡从「第一次使用」开始计时，永久卡不过期。</div>
+    <div id="genResult"></div>
+  </div>
+
+  <!-- 卡密列表 -->
+  <div class="panel">
+    <h2><span class="dot"></span>卡密管理</h2>
+    <div class="row" style="margin-bottom:12px">
+      <input id="q" class="grow" type="text" placeholder="搜卡密或备注" style="flex:1 1 180px" />
+      <select id="fStatus" style="flex:0 0 128px">
+        <option value="">全部状态</option>
+        <option value="unused">未激活</option>
+        <option value="active">生效中</option>
+        <option value="expired">已过期</option>
+        <option value="used_up">已用完</option>
+        <option value="disabled">已停用</option>
+      </select>
+      <select id="fType" style="flex:0 0 128px">
+        <option value="">全部类型</option>
+        <option value="count">次数卡</option>
+        <option value="hour">小时卡</option>
+        <option value="day">天卡</option>
+        <option value="week">周卡</option>
+        <option value="month">月卡</option>
+        <option value="forever">永久卡</option>
+      </select>
+      <button class="btn ghost sm" id="refreshBtn">刷新</button>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>卡密</th><th>类型</th><th>状态</th><th>功能次数</th><th>激活时间</th><th>到期 / 剩余</th><th>备注</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"><tr><td colspan="8" style="color:#7d84b5">加载中…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="note" id="listInfo"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn ghost sm" id="exportBtn">导出全部卡密</button>
+      <button class="btn ghost sm" id="copyAllBtn">复制本页卡密</button>
+      <button class="btn ghost sm" id="clearSessBtn">踢掉所有在线用户</button>
+    </div>
+  </div>
+
+  <!-- 设置 -->
+  <div class="panel">
+    <details>
+      <summary>设置与备份</summary>
+      <div class="grid2">
+        <div>
+          <label class="lbl">管理口令（至少 6 位）</label>
+          <div class="row">
+            <input id="newPw" class="grow" type="password" placeholder="新口令" />
+            <button class="btn sm" id="pwBtn">修改</button>
+          </div>
+          <div class="note" id="pwNote"></div>
+        </div>
+        <div>
+          <label class="lbl">数据备份 / 恢复</label>
+          <div class="row">
+            <button class="btn ghost sm" id="backupBtn">备份到本机</button>
+            <button class="btn ghost sm" id="restoreBtn">从备份恢复</button>
+            <input id="restoreFile" type="file" accept=".json" class="hidden" />
+          </div>
+          <div class="note">服务器重启前先备份，重启后导入即可恢复全部卡密。</div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="note" style="text-align:center;margin-top:16px">数据只存在你自己的服务器上 · 不经过任何第三方</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  var state = { keys: [], types: {}, functions: [], passwordFromEnv: false, storage: 'file' };
+
+  function $(id) { return document.getElementById(id); }
+  var toastTimer;
+  function toast(text, ms) {
+    var t = $('toast');
+    t.textContent = text;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, ms || 2000);
+  }
+
+  function api(path, opts) {
+    opts = opts || {};
+    return fetch(path, {
+      method: opts.method || 'GET',
+      credentials: 'same-origin',
+      headers: opts.body ? { 'Content-Type': 'application/json' } : {},
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        return { status: r.status, data: d };
+      });
+    });
+  }
+
+  function fmt(ts) {
+    if (!ts) return '—';
+    var d = new Date(ts);
+    var p = function (n) { return n < 10 ? '0' + n : '' + n; };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function left(ts) {
+    if (!ts) return '—';
+    var ms = ts - Date.now();
+    if (ms <= 0) return '已过期';
+    var m = Math.floor(ms / 60000);
+    var d = Math.floor(m / 1440);
+    var h = Math.floor((m % 1440) / 60);
+    if (d > 0) return d + ' 天 ' + h + ' 小时';
+    if (h > 0) return h + ' 小时 ' + (m % 60) + ' 分';
+    return (m % 60) + ' 分钟';
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /* ---------------- 登录 ---------------- */
+  $('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var pw = $('pw').value;
+    if (!pw) return;
+    $('loginBtn').disabled = true;
+    $('loginBtn').textContent = '验证中…';
+    api('/api/admin/login', { method: 'POST', body: { password: pw } }).then(function (r) {
+      $('loginBtn').disabled = false;
+      $('loginBtn').textContent = '进入';
+      if (r.data && r.data.ok) { $('pw').value = ''; enter(); return; }
+      $('loginMsg').textContent = (r.data && r.data.message) || '口令不对';
+    }).catch(function () {
+      $('loginBtn').disabled = false;
+      $('loginBtn').textContent = '进入';
+      $('loginMsg').textContent = '连不上服务器';
+    });
+  });
+
+  function enter() {
+    $('loginView').classList.add('hidden');
+    $('appView').classList.remove('hidden');
+    loadState();
+    loadKeys();
+  }
+
+  $('logoutBtn').addEventListener('click', function () {
+    api('/api/admin/logout', { method: 'POST' }).then(function () { location.reload(); });
+  });
+
+  /* ---------------- 状态 ---------------- */
+  function loadState() {
+    api('/api/admin/state').then(function (r) {
+      if (r.status === 401) { showLogin(); return; }
+      var d = r.data;
+      if (!d || !d.ok) return;
+      state.passwordFromEnv = !!d.passwordFromEnv;
+      state.storage = d.storage;
+      state.types = {};
+      (d.types || []).forEach(function (t) { state.types[t.key] = t; });
+      state.functions = d.functions || [];
+      buildFnPicker();
+      $('sTotal').textContent = d.stats.total;
+      $('sActive').textContent = d.stats.active;
+      $('sUnused').textContent = d.stats.unused;
+      $('sOnline').textContent = d.online;
+      $('pubToggle').checked = !!d.publicMode;
+      $('pubState').textContent = d.publicMode ? '当前：公益开放（所有人免卡密）' : '当前：需要卡密';
+      var sd = d.storageDetail || {};
+      $('who').textContent = '存储：' + (d.storage === 'redis'
+          ? (sd.remoteHealthy === false ? '云端（暂时连不上，正在自动重试）' : '云端（长期保存）')
+          : '本地文件（重启会重置）')
+        + (d.passwordFromEnv ? ' · 口令来自环境变量' : '');
+      if (d.storage === 'redis' && sd.remoteHealthy !== false) {
+        $('storageWarn').classList.add('hidden');
+      } else {
+        $('storageWarn').classList.remove('hidden');
+        $('storageWarn').textContent = d.storage === 'redis'
+          ? '暂时连不上云端存储，现在的改动只会存在本机，等连上会自动同步回去。卡密不会丢，但请别在这时候清空浏览器或重建服务。'
+          : '当前是文件存储，服务器重启或重新部署后卡密数据会重置。要长期保存，请在 Render 里配置免费的 Redis 环境变量（或定期在下面导出备份）。';
+      }
+      $('pwNote').textContent = d.passwordFromEnv
+        ? '口令由部署面板的环境变量 ADMIN_PASSWORD 决定，改那里才生效。'
+        : '改完立即生效，别忘掉。';
+    });
+  }
+
+  function showLogin() {
+    $('appView').classList.add('hidden');
+    $('loginView').classList.remove('hidden');
+  }
+
+  /* ---------------- 公益开关 ---------------- */
+  $('pubToggle').addEventListener('change', function () {
+    var on = $('pubToggle').checked;
+    $('pubToggle').disabled = true;
+    api('/api/admin/public', { method: 'POST', body: { enabled: on } }).then(function (r) {
+      $('pubToggle').disabled = false;
+      if (r.data && r.data.ok) {
+        $('pubState').textContent = r.data.publicMode ? '当前：公益开放（所有人免卡密）' : '当前：需要卡密';
+        toast(r.data.publicMode ? '已开启公益模式，所有人免卡密进入' : '已关闭公益模式，恢复卡密验证');
+      } else {
+        $('pubToggle').checked = !on;
+        toast((r.data && r.data.message) || '改失败了');
+      }
+    }).catch(function () { $('pubToggle').disabled = false; $('pubToggle').checked = !on; toast('网络出错'); });
+  });
+
+  /* ---------------- 生成卡密 ---------------- */
+  var defaults = { count: 30, hour: 1, day: 1, week: 1, month: 1, forever: 0 };
+
+  function buildFnPicker() {
+    if (!state.functions.length) return;
+    var box = $('fnGroups');
+    if (box.dataset.built === '1') return;
+    var groups = {};
+    state.functions.forEach(function (f) {
+      (groups[f.group] = groups[f.group] || []).push(f);
+    });
+    var html = '';
+    Object.keys(groups).forEach(function (g) {
+      html += '<div class="fn-group"><div class="gtitle">' + esc(g) + '</div><div class="fn-list">';
+      groups[g].forEach(function (f) {
+        html += '<label class="fn-row" data-fn="' + esc(f.key) + '">'
+          + '<input type="checkbox" checked>'
+          + '<span class="nm">' + esc(f.label) + '</span>'
+          + '<input type="number" min="0" max="9999" value="1" inputmode="numeric">'
+          + '</label>';
+      });
+      html += '</div></div>';
+    });
+    box.innerHTML = html;
+    box.dataset.built = '1';
+
+    box.querySelectorAll('.fn-row').forEach(function (row) {
+      var cb = row.querySelector('input[type="checkbox"]');
+      var num = row.querySelector('input[type="number"]');
+      function sync() {
+        row.classList.toggle('on', cb.checked);
+        num.disabled = !cb.checked;
+        updateFnNote();
+      }
+      cb.addEventListener('change', sync);
+      num.addEventListener('input', updateFnNote);
+      sync();
+    });
+  }
+
+  function selectedFns() {
+    var out = {};
+    document.querySelectorAll('.fn-row').forEach(function (row) {
+      var cb = row.querySelector('input[type="checkbox"]');
+      if (!cb || !cb.checked) return;
+      var n = parseInt(row.querySelector('input[type="number"]').value, 10);
+      out[row.dataset.fn] = (!n || n < 1) ? 1 : Math.min(9999, n);
+    });
+    return out;
+  }
+
+  function updateFnNote() {
+    var n = Object.keys(selectedFns()).length;
+    var el = $('fnNote');
+    if (!el) return;
+    el.textContent = n
+      ? '已选 ' + n + ' 个功能，每个功能单独算次数；用哪个扣哪个，互不影响。'
+      : '不勾任何功能 = 老式次数卡（每验证进入一次扣 1 次，用左上「次数」填总量）。';
+  }
+
+  $('fnAll1').addEventListener('click', function () {
+    document.querySelectorAll('.fn-row').forEach(function (row) {
+      row.querySelector('input[type="checkbox"]').checked = true;
+      row.querySelector('input[type="number"]').value = 1;
+      row.querySelector('input[type="number"]').disabled = false;
+      row.classList.add('on');
+    });
+    updateFnNote();
+  });
+  $('fnAdd1').addEventListener('click', function () {
+    document.querySelectorAll('.fn-row').forEach(function (row) {
+      var cb = row.querySelector('input[type="checkbox"]');
+      var num = row.querySelector('input[type="number"]');
+      if (!cb.checked) return;
+      var n = parseInt(num.value || '0', 10) || 0;
+      num.value = Math.min(9999, n + 1);
+    });
+  });
+  $('fnNone').addEventListener('click', function () {
+    document.querySelectorAll('.fn-row').forEach(function (row) {
+      row.querySelector('input[type="checkbox"]').checked = false;
+      row.classList.remove('on');
+      row.querySelector('input[type="number"]').disabled = true;
+    });
+    updateFnNote();
+  });
+
+  function syncTypeUi() {
+    var t = $('gType').value;
+    var box = $('gValue').parentNode;
+    var isCount = t === 'count';
+    $('fnBox').classList.toggle('hidden', !isCount);
+
+    if (t === 'forever') {
+      box.style.opacity = '.35';
+      $('gValue').value = 0;
+      $('gValue').disabled = true;
+      $('gValueLbl').textContent = '永久卡不用填';
+    } else {
+      box.style.opacity = '1';
+      $('gValue').disabled = false;
+      $('gValue').value = defaults[t] || 1;
+      $('gValueLbl').textContent = isCount ? '次数（不勾功能时生效）' : ('时长（' + (state.types[t] ? state.types[t].unit : '') + '）');
+    }
+    $('genHint').textContent = isCount
+      ? '次数卡：勾了功能就按功能扣次（进站不扣），没勾就按进入次数扣。'
+      : '小时/天/周/月卡从「第一次使用」开始计时，永久卡不过期。';
+  }
+
+  $('gType').addEventListener('change', syncTypeUi);
+
+  $('genBtn').addEventListener('click', function () {
+    var type = $('gType').value;
+    var body = {
+      type: type,
+      value: type === 'forever' ? 0 : parseInt($('gValue').value || defaults[type], 10),
+      count: parseInt($('gCount').value || 1, 10),
+      prefix: $('gPrefix').value,
+      note: $('gNote').value,
+    };
+    if (type === 'count') body.functions = selectedFns();
+
+    $('genBtn').disabled = true;
+    $('genBtn').textContent = '生成中…';
+    api('/api/admin/keys/generate', { method: 'POST', body: body }).then(function (r) {
+      $('genBtn').disabled = false;
+      $('genBtn').textContent = '生成';
+      if (!r.data || !r.data.ok) { toast((r.data && r.data.message) || '生成失败'); return; }
+      renderGenResult(r.data.codes, r.data.typeLabel, type === 'count' ? body.functions : null);
+      loadKeys();
+      loadState();
+    }).catch(function () {
+      $('genBtn').disabled = false;
+      $('genBtn').textContent = '生成';
+      toast('网络出错');
+    });
+  });
+
+  function renderGenResult(codes, typeLabel, fns) {
+    var fnCount = fns ? Object.keys(fns).length : 0;
+    var html = '<div style="margin-top:16px">'
+      + '<div class="row" style="margin-bottom:9px"><b style="font-size:.86rem;color:#bcd8ff">刚生成 ' + codes.length + ' 张' + esc(typeLabel || '')
+      + (fnCount ? '（' + fnCount + ' 个功能）' : '') + '</b>'
+      + '<span class="grow"></span>'
+      + '<button class="btn ghost sm" id="copyGen">复制全部</button>'
+      + '<button class="btn ghost sm" id="dlGen">下载 TXT</button></div>'
+      + '<div class="codes">';
+    codes.forEach(function (c) { html += '<span class="code-chip" data-c="' + esc(c) + '">' + esc(c) + '</span>'; });
+    html += '</div><div class="note">点单个卡密可复制。发出去之后这张卡就在你后台记录着，随时能查状态和每个功能用了几个。</div></div>';
+    $('genResult').innerHTML = html;
+    document.querySelectorAll('.code-chip').forEach(function (el) {
+      el.addEventListener('click', function () { copy(el.dataset.c); });
+    });
+    $('copyGen').addEventListener('click', function () { copy(codes.join('\n')); });
+    $('dlGen').addEventListener('click', function () {
+      var blob = new Blob([codes.join('\n') + '\n'], { type: 'text/plain;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '卡密-' + new Date().toISOString().slice(0, 10) + '.txt';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  }
+
+  function copy(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(function () { toast('已复制'); }, function () { fallbackCopy(text); });
+    } else fallbackCopy(text);
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('已复制'); } catch (e) { toast('复制失败，长按手动选'); }
+    document.body.removeChild(ta);
+  }
+
+  /* ---------------- 列表 ---------------- */
+  function loadKeys() {
+    var qs = '?q=' + encodeURIComponent($('q').value.trim())
+      + '&status=' + encodeURIComponent($('fStatus').value)
+      + '&type=' + encodeURIComponent($('fType').value);
+    api('/api/admin/keys' + qs).then(function (r) {
+      if (r.status === 401) { showLogin(); return; }
+      state.keys = (r.data && r.data.keys) || [];
+      renderKeys(r.data && r.data.total);
+    });
+  }
+
+  function fnBadges(k) {
+    if (!k.perms || !k.perms.length) {
+      return k.type === 'count' ? '<span class="note" style="margin:0">按进入次数</span>' : '<span class="note" style="margin:0">—</span>';
+    }
+    var html = '<div class="fn-badges">';
+    k.perms.forEach(function (p) {
+      var done = p.left <= 0;
+      html += '<span class="fn-badge' + (done ? ' done' : '') + '">' + esc(p.label)
+        + ' <b>' + p.used + '/' + p.total + '</b></span>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function renderKeys(total) {
+    var tb = $('tbody');
+    if (!state.keys.length) {
+      tb.innerHTML = '<tr><td colspan="8" style="color:#7d84b5">还没有卡密，上面生成一批试试</td></tr>';
+      $('listInfo').textContent = '';
+      return;
+    }
+    var html = '';
+    state.keys.forEach(function (k) {
+      var expiry = '';
+      if (k.type === 'count') expiry = (k.perms && k.perms.length) ? '剩 ' + k.usesLeft + ' 次（合计）' : '剩余 ' + k.usesLeft + ' 次';
+      else if (k.type === 'forever') expiry = '不过期';
+      else if (!k.activatedAt) expiry = '未开始计时';
+      else expiry = left(k.expiresAt) + '<span style="color:#6b6c8f"> · 至 ' + fmt(k.expiresAt) + '</span>';
+
+      html += '<tr>'
+        + '<td class="mono">' + esc(k.code) + '</td>'
+        + '<td>' + esc(k.typeLabel) + '</td>'
+        + '<td><span class="tag ' + k.status + '">' + esc(k.statusLabel) + '</span></td>'
+        + '<td>' + fnBadges(k) + '</td>'
+        + '<td style="white-space:nowrap">' + (k.activatedAt ? fmt(k.activatedAt) : '—') + '</td>'
+        + '<td>' + expiry + '</td>'
+        + '<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;color:#9aa0cf">' + esc(k.note || '—') + '</td>'
+        + '<td style="white-space:nowrap">'
+        + '<button class="btn ghost sm" data-act="copy" data-code="' + esc(k.code) + '" style="margin:0 4px 4px 0">复制</button>'
+        + '<button class="btn ghost sm" data-act="toggle" data-code="' + esc(k.code) + '" style="margin:0 4px 4px 0">' + (k.disabled ? '恢复' : '停用') + '</button>'
+        + '<button class="btn ghost sm" data-act="extend" data-code="' + esc(k.code) + '" style="margin:0 4px 4px 0">延期</button>'
+        + '<button class="btn ghost sm" data-act="delete" data-code="' + esc(k.code) + '" style="margin:0 4px 4px 0">删</button>'
+        + '</td></tr>';
+    });
+    tb.innerHTML = html;
+    $('listInfo').textContent = '显示 ' + state.keys.length + ' 张' + (total && total > state.keys.length ? '，共 ' + total + ' 张（用搜索缩小范围）' : '');
+
+    tb.querySelectorAll('button[data-act]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var code = btn.dataset.code;
+        var act = btn.dataset.act;
+        if (act === 'copy') return copy(code);
+        if (act === 'toggle') {
+          api('/api/admin/keys/' + encodeURIComponent(code) + '/toggle', { method: 'POST' }).then(function () { loadKeys(); loadState(); });
+          return;
+        }
+        if (act === 'delete') {
+          if (!confirm('删除卡密 ' + code + '？删了就没法恢复。')) return;
+          api('/api/admin/keys/' + encodeURIComponent(code) + '/delete', { method: 'POST' }).then(function () { loadKeys(); loadState(); toast('已删除'); });
+          return;
+        }
+        if (act === 'extend') {
+          var k = state.keys.filter(function (x) { return x.code === code; })[0];
+          var unit = k && k.type === 'count' ? '次' : (k ? k.unit : '');
+          var s = prompt('延期多少' + (unit || '（时长）') + '？（正数）' + (k && k.perms && k.perms.length ? '\n会加到每个功能上' : ''), '1');
+          if (!s) return;
+          var n = parseInt(s, 10);
+          if (!n || n <= 0) return toast('填个正数');
+          api('/api/admin/keys/' + encodeURIComponent(code) + '/extend', { method: 'POST', body: { amount: n } })
+            .then(function (r) {
+              if (r.data && r.data.ok) { toast('已延期'); loadKeys(); loadState(); }
+              else toast((r.data && r.data.message) || '延期失败');
+            });
+        }
+      });
+    });
+  }
+
+  $('q').addEventListener('input', debounce(loadKeys, 300));
+  $('fStatus').addEventListener('change', loadKeys);
+  $('fType').addEventListener('change', loadKeys);
+  $('refreshBtn').addEventListener('click', function () { loadKeys(); loadState(); toast('已刷新'); });
+
+  function debounce(fn, ms) {
+    var t;
+    return function () { clearTimeout(t); t = setTimeout(fn, ms); };
+  }
+
+  /* ---------------- 其它操作 ---------------- */
+  $('exportBtn').addEventListener('click', function () {
+    api('/api/admin/export').then(function (r) {
+      var blob = new Blob([JSON.stringify({ db: r.data.db }, null, 0)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'CpmTool-卡密备份-' + new Date().toISOString().slice(0, 10) + '.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast('备份已下载，存好');
+    });
+  });
+
+  $('copyAllBtn').addEventListener('click', function () {
+    if (!state.keys.length) return toast('这一页没有卡密');
+    copy(state.keys.map(function (k) { return k.code; }).join('\n'));
+  });
+
+  $('clearSessBtn').addEventListener('click', function () {
+    if (!confirm('把所有在线用户踢下线？他们需要重新输卡密。')) return;
+    api('/api/admin/sessions/clear', { method: 'POST' }).then(function () { toast('已全部踢下线'); loadState(); });
+  });
+
+  $('pwBtn').addEventListener('click', function () {
+    var np = $('newPw').value;
+    if (np.length < 6) return toast('新口令至少 6 位');
+    var old = prompt('先输一次当前口令');
+    if (!old) return;
+    api('/api/admin/password', { method: 'POST', body: { old: old, next: np } }).then(function (r) {
+      if (r.data && r.data.ok) { $('newPw').value = ''; toast('口令已修改'); }
+      else toast((r.data && r.data.message) || '改失败');
+    });
+  });
+
+  $('backupBtn').addEventListener('click', function () { $('exportBtn').click(); });
+  $('restoreBtn').addEventListener('click', function () { $('restoreFile').click(); });
+  $('restoreFile').addEventListener('change', function (e) {
+    var f = e.target.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var data;
+      try { data = JSON.parse(reader.result); } catch (err) { return toast('文件读不出来'); }
+      if (!confirm('导入会覆盖当前全部卡密，确定？')) return;
+      api('/api/admin/import', { method: 'POST', body: { db: data.db || data } }).then(function (r) {
+        if (r.data && r.data.ok) { toast('导入成功，共 ' + r.data.keys + ' 张卡'); loadKeys(); loadState(); }
+        else toast((r.data && r.data.message) || '导入失败');
+      });
+    };
+    reader.readAsText(f);
+    e.target.value = '';
+  });
+
+  /* ---------------- 启动 ---------------- */
+  api('/api/admin/state').then(function (r) {
+    if (r.status === 200 && r.data && r.data.ok) enter();
+    else showLogin();
+  }).catch(function () { showLogin(); });
+
+  syncTypeUi();
+})();
+</script>
+</body>
+</html>
